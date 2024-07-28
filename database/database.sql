@@ -6,6 +6,7 @@ CREATE TABLE users(
     first_name VARCHAR(30) NOT NULL ,
     last_name VARCHAR(30) NOT NULL ,
     profile_ VARCHAR(100) NOT NULL, 
+    phone VARCHAR(11) NOT NULL,
     username VARCHAR(50) NOT NULL ,
     passwd VARCHAR(125) NOT NULL,
     gmail VARCHAR(59) NOT NULL ,
@@ -35,7 +36,6 @@ CREATE TABLE category(
 CREATE TABLE media(
     path_file VARCHAR(255) NOT NULL,
     bid INT NOT NULL , 
-    format VARCHAR(10) NOT NULL
 );
 
 

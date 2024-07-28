@@ -36,7 +36,14 @@ class Database {
             return false;
         }
     }
-    public function registerUser(string $phone, string $firstName, string $lastName, string $profile, string $userName, string $passwd, string $gmail, string $rol) : bool | string {
+    public function registerUser(string $phone,
+        string $firstName,
+        string $lastName,
+        string $profile,
+        string $userName,
+        string $passwd,
+        string $gmail,
+        string $rol) : bool | string {
         if ($this->connect()) {
             $stmt = $this->conn->prepare('SELECT * FROM users WHERE username = :username');
             $stmt->bindParam(':username', $userName);
@@ -50,11 +57,12 @@ class Database {
                 return "password len < 8"; 
             }
     
-            $stmt = $this->conn->prepare('INSERT INTO users (first_name, last_name, profile_, username, passwd, gmail, rol) VALUES (:firstName, :lastName, :profile, :username, :passwd, :gmail, :rol)');
+            $stmt = $this->conn->prepare('INSERT INTO users (first_name, last_name, profile_, phone , username, passwd, gmail, rol) VALUES (:firstName, :lastName, :profile, :phone, :username, :passwd, :gmail, :rol)');
             $password = $this->hashing($passwd);
             $stmt->bindParam(':firstName', $firstName);
             $stmt->bindParam(':lastName', $lastName);
             $stmt->bindParam(':profile', $profile);
+            $stmt->bindParam(':phone', $phone);
             $stmt->bindParam(':username', $userName);
             $stmt->bindParam(':passwd', $password);
             $stmt->bindParam(':gmail', $gmail);
@@ -129,7 +137,12 @@ class Database {
             return false;
         }
     }
-    public function updateUser(int $userid, string $password = '' ,  string $firstName = '', string $lastName = '', string $profile = '',  string $gmail = '') : bool{
+    public function updateUser(int $userid, string $password = '',
+        string $firstName = '',
+        string $lastName = '',
+        string $profile = '',
+        string $gmail = '') : bool{
+
         if ($this->connect()) {
             $stmt = $this->conn->prepare('UPDATE users SET ');
             $updates = array();
@@ -167,7 +180,7 @@ class Database {
             return false;
         }
     }
-    public function CheckPermissionAdmin(string $username) : bool{
+    public function checkPermissionAdmin(string $username) : bool{
         if ($this->connect()) {
             $stmt = $this->conn->prepare('SELECT rol FROM users WHERE username = :username');
             $stmt->execute(array(':username' => $username));
@@ -179,14 +192,142 @@ class Database {
         }
         return False;
     }
-    public function getAllUsername() : array {
-        return [];
+    public function createPost(
+        string $title,
+        string $desc,
+        string $abs,
+        string $date,
+        string $time,
+        String $photo,
+        int $wid,
+        int $cid) : bool {
+        if ($this->connect()) {
+            $stmt = $this->conn->prepare('
+                INSERT INTO blogs (title, description, abstract,photo, date, time, wid, cid)
+                VALUES (:title, :desc, :abs, :photo, :date, :time, :wid, :cid)
+            ');
+            $stmt->bindParam(':title', $title);
+            $stmt->bindParam(':desc', $desc);
+            $stmt->bindParam(':abs', $abs);
+            $stmt->bindParam(':photo', $photo);
+            $stmt->bindParam(':date', $date);
+            $stmt->bindParam(':time', $time);
+            $stmt->bindParam(':wid', $wid);
+            $stmt->bindParam(':cid', $cid);
+            if ($stmt->execute()) {
+                return true;
+            } else {
+                return false;
+            }
+        } else {
+            return false;
+        }
     }
+    public function writeMedia(Int $postId, array $mediaPath) : bool {
+        if ($this->connect()) {
+            $stmt = $this->conn->prepare('
+                INSERT INTO media (bid, path_file)
+                VALUES (:postId, :mediaPath)
+            ');
+            foreach ($mediaPath as $path) {
+                $stmt->bindParam(':postId', $postId);
+                $stmt->bindParam(':mediaPath', $path);
+                if (!$stmt->execute()) {
+                    return false;
+                }
+            }
+            return true;
+        } else {
+            return false;
+        }
+    }
+    public function createCategory(string $categoryName) : bool {
+        if ($this->connect()) {
+            $stmt = $this->conn->prepare('INSERT INTO category (category_name) VALUES (:categoryName)');
+            $stmt->bindParam(':categoryName', $categoryName);
+            if ($stmt->execute()) {
+                return true;
+            } else {
+                return false;
+            }
+        } else {
+            return false;
+        }
+    }
+    public function getPostIdAndTitle() : array | false{
+        if ($this->connect()) {
+            $stmt = $this->conn->prepare('
+                SELECT bid, title
+                FROM blogs
+            ');
+            $stmt->execute();
+            $result = $stmt->fetchAll(PDO::FETCH_ASSOC);
+            return $result;
+        } else {
+            return false;
+        }
+    }
+
+    public function getPost(Int $postId) : false | array {
+        if ($this->connect()) {
+            $stmt = $this->conn->prepare('
+                SELECT b.*, u.first_name, u.last_name, u.profile_
+                FROM blogs b
+                JOIN users u ON b.wid = u.userid
+                WHERE b.bid = :postId
+            ');
+            $stmt->bindParam(':postId', $postId);
+            $stmt->execute();
+            $result = $stmt->fetch(PDO::FETCH_ASSOC);
+            if ($result) {
+                $stmt = $this->conn->prepare('
+                    SELECT path_file
+                    FROM media
+                    WHERE bid = :postId
+                ');
+                $stmt->bindParam(':postId', $postId);
+                $stmt->execute();
+                $mediaFiles = $stmt->fetchAll(PDO::FETCH_ASSOC);
+                $result['media_files'] = $mediaFiles;
+                return $result;
+            } else {
+                return false;
+            }
+        } else {
+            return false;
+        }
+    }
+    public function getAllUserName() : array {
+        if ($this->connect()) {
+            $stmt = $this->conn->prepare('SELECT username FROM users');
+            $stmt->execute();
+            $result = $stmt->fetchAll(PDO::FETCH_ASSOC);
+            return $result;
+        } else {
+            return [];
+        }
+    }
+
     public function getAllWriter() : array {
-        return [];
+        if ($this->connect()) {
+            $stmt = $this->conn->prepare('SELECT * FROM users WHERE rol = "writer"');
+            $stmt->execute();
+            $result = $stmt->fetchAll(PDO::FETCH_ASSOC);
+            return $result;
+        } else {
+            return [];
+        }
     }
+
     public function getAllUser() : array {
-        return [];
+        if ($this->connect()) {
+            $stmt = $this->conn->prepare('SELECT * FROM users');
+            $stmt->execute();
+            $result = $stmt->fetchAll(PDO::FETCH_ASSOC);
+            return $result;
+        } else {
+            return [];
+        }
     }
     public function hashing(string $data) : string {
         return hash('sha384', $data);

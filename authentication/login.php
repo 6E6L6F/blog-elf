@@ -20,7 +20,7 @@ class Login {
         }
         $user = $this->db->getPasswordByUsername($username);
         if($user && $this->db->hashing($passwd) == $user['passwd']){
-            $this->session->login($username);
+            $this->session->login($username , $user['userid']);
             $this->session->set("userid" , $user['userid']);
             $this->session->setExpireTime(604800);
             return "you are logined";

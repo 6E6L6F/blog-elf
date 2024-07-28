@@ -160,21 +160,25 @@ $router->addRoute('GET', '/admin', true, function (Request $request) {
 $router->addRoute('GET', '/admin/delete-user', true, function (Request $request) {
     global $database;
     $response = $database->getAllUser();
+    echo $response;
 });
 
 $router->addRoute('GET', '/admin/delete-writer', true, function (Request $request) {
     global $database;
     $response = $database->getAllWriter();
+    echo $response;
 });
 
 $router->addRoute('GET', '/admin/delete-post', true, function (Request $request) {
     global $database;
-    $rseponse = $database->getAllBlogs();
+    $response = $database->getAllBlogs();
+    echo $response;
 });
 
 $router->addRoute('GET', '/admin/add-writer', true, function (Request $request) {
     global $database;
     $response = $database->getAllUsername();
+    echo $response;
 });
 
 // POST METHOD 
@@ -184,7 +188,7 @@ $router->addRoute('POST', '/admin/delete-user', true, function (Request $request
     $response = $admin->deleteUser(
         userId: $userid
     );
-    return $response;
+    echo $response;
 });
 
 $router->addRoute('POST', '/admin/delete-writer', true, function (Request $request) {
@@ -203,7 +207,6 @@ $router->addRoute('POST', '/admin/delete-post', true, function (Request $request
     $response = $admin->deletePost(
         postId: $postid
     );
-
     echo $response;
 });
 

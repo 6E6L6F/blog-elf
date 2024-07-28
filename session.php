@@ -48,9 +48,10 @@ class Session {
 
     }
 
-    public function login(string $userName) {
+    public function login(string $userName , int $userid) {
         $this->set('logged_in', true);
         $this->set('username', $userName);
+        $this->set('userid', $userid);
         $this->set('login_time', date('Y-m-d H:i:s'));
     }
 
