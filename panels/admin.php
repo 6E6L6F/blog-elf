@@ -10,7 +10,7 @@ class Admin extends FilePathCollector{
 
     }
     public function loadPage(){
-        if ($this->conn->CheckPermissionAdmin($this->session->get("username"))) {
+        if ($this->conn->CheckPermissionAdmin($this->session->get("userid"))) {
             $this->getFilePathPhp("admin");
         }else {
             $this->getFilePathPhp("not_found");

@@ -9,6 +9,7 @@ require "session.php";
 require "response.php";
 require "panels/admin.php";
 require "user/profile.php";
+require "panels/writer.php";
 require "database/database.php";
 require "authentication/login.php";
 require "authentication/register.php";
@@ -47,11 +48,13 @@ if ($conn != false){
         conn: $database,
         session: $session
     );
+    $writer = New Writer(
+        conn: $database,
+        session: $session
+    );
 }else {
     exit(0);
 }
-
-
 
 
 // index pages
@@ -244,8 +247,73 @@ $router->addRoute('GET', '/admin/add-writer/:username', true, function (Request 
 });
 
 // witer page
+// GET METHOD 
+$router->addRoute('GET', '/writer', true, function (Request $request , string $username) {
+    global $writer;
+    $writer->loadPage();
 
+});
 
+// POST METHOD
+$router->addRoute('POST', '/writer/create-post', true, function (Request $request) {
+    global $writer;
+    global $session;
+    $title = $request->getPost("title");
+    $abs = $request->getPost("abs");
+    $desc = $request->getPost("desc");
+    $photo = "";
+    $date = "";
+    $time = "";
+    $cid = $request->getPost("cid");
+    $wid = $session->get("userid");
+    $respones = $writer->createPost(
+        title: $title,
+        abs: $abs,
+        desc: $desc,
+        photo: $photo,
+        date: $date,
+        time: $time,
+        wid: $wid,
+        cid: $cid,
+    );
+    echo $respones;
+
+});
+
+$router->addRoute('POST', '/writer/create-category', true, function (Request $request) {
+    global $writer;
+    $categoryName = $request->getPost("categoryName");
+    $response = $writer->createCategory(
+        categoryName: $categoryName,
+    );
+    echo $response;
+
+});
+
+$router->addRoute('POST', '/writer/writeMedia', true, function (Request $request) {
+    global $writer;
+    $mediaPaths = []; 
+    $postId = $request->getPost("postId");  
+    $response = $writer->writeMedia(
+        mediaPath: $mediaPaths,
+        postId: $postId,
+    );
+    echo $response;
+
+});
+$router->addRoute('POST', '/writer/get-all-feedbacks', true, function (Request $request) {
+    global $writer;
+    $response = $writer->getAllFeedBacks();
+    echo $response;
+});
+
+$router->addRoute('POST', '/writer/get-post-feedbacks/:postId', true, function (Request $request , Int $postId) {
+    global $writer;
+    $response = $writer->getFeedBacksPost(
+        postId: $postId,
+    );
+    echo $response;
+});
 
 // $router->addRoute('POST', '/blogid', function (Request $request) {
 //     $title = $request->getPost('title');

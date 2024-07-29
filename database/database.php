@@ -78,7 +78,7 @@ class Database {
     }
     public function getAllBlogs() : bool | array{
         if ($this->connect()) {
-            $stmt = $this->conn->prepare('SELECT * FROM blogs LIMIT 10');
+            $stmt = $this->conn->prepare('SELECT bid,title,abstract FROM blogs LIMIT 10');
             $stmt->execute();
             $result = $stmt->fetchAll(PDO::FETCH_ASSOC);
             return $result;
@@ -98,7 +98,7 @@ class Database {
     }
     public function getPostsByCategoryId(int $cid) : bool | array{
         if ($this->connect()) {
-            $stmt = $this->conn->prepare('SELECT * FROM blogs WHERE cid = :cid');
+            $stmt = $this->conn->prepare('SELECT bid,title,abstract  FROM blogs WHERE cid = :cid');
             $stmt->bindParam(':cid', $cid);
             $stmt->execute();
             $result = $stmt->fetchAll(PDO::FETCH_ASSOC);
@@ -180,12 +180,24 @@ class Database {
             return false;
         }
     }
-    public function checkPermissionAdmin(string $username) : bool{
+    public function checkPermissionAdmin(string $userId) : bool{
         if ($this->connect()) {
-            $stmt = $this->conn->prepare('SELECT rol FROM users WHERE username = :username');
-            $stmt->execute(array(':username' => $username));
+            $stmt = $this->conn->prepare('SELECT rol FROM users WHERE userId = :userId');
+            $stmt->execute(array(':userId' => $userId));
             $result = $stmt->fetchAll(PDO::FETCH_ASSOC);
             if ($result['rol'] != "admin") {
+                return False;
+            }
+            return True;
+        }
+        return False;
+    }
+    public function checkPermissionWriter(string $userId) : bool{
+        if ($this->connect()) {
+            $stmt = $this->conn->prepare('SELECT rol FROM users WHERE userId = :userId');
+            $stmt->execute(array(':username' => $userId));
+            $result = $stmt->fetchAll(PDO::FETCH_ASSOC);
+            if ($result['rol'] != "writer") {
                 return False;
             }
             return True;
@@ -254,19 +266,6 @@ class Database {
             return false;
         }
     }
-    public function getPostIdAndTitle() : array | false{
-        if ($this->connect()) {
-            $stmt = $this->conn->prepare('
-                SELECT bid, title
-                FROM blogs
-            ');
-            $stmt->execute();
-            $result = $stmt->fetchAll(PDO::FETCH_ASSOC);
-            return $result;
-        } else {
-            return false;
-        }
-    }
 
     public function getPost(Int $postId) : false | array {
         if ($this->connect()) {
@@ -328,6 +327,12 @@ class Database {
         } else {
             return [];
         }
+    }
+    public function getAllFeedBacks() : array{
+        return [];
+    }
+    public function getFeedBacksPost(Int $postId) : array {
+        return [];
     }
     public function hashing(string $data) : string {
         return hash('sha384', $data);

@@ -12,7 +12,11 @@ class Profile extends FilePathCollector{
     public function loadPage(){
         $this->getFilePathPhp("profile");
     }
-    public function setupInfo(string $password = '', string $firstName = '', string $lastName = '', string $profile = '', string $gmail = ''){
+    public function setupInfo(String $password = '',
+        string $firstName = '', 
+        String $lastName = '', 
+        String $profile = '', 
+        String $gmail = '') : bool {
         $user_id = $this->session->get("userid");
         $result = $this->conn->updateUser(
             userid: $user_id,
